@@ -1,8 +1,9 @@
 ---
 driver:
   name: vagrant
-  network:
-    - ["forwarded_port", {guest: 80, host: 8080}]
+  # enable to interact with the test app on port 8080 of host machine
+  #network:
+  #  - ["forwarded_port", {guest: 80, host: 8080}]
 
 provisioner:
   name: chef_zero

@@ -117,12 +117,20 @@ template 'passengerfile' do
   notifies :run, 'execute[stop app]'
 end
 
-# install ruby
-include_recipe 'build-essential'
-package 'ruby devel dependencies' do
-  package_name %w(openssl-devel readline-devel zlib-devel)
-  notifies :run, 'execute[stop app]'
+# prep system for ruby
+case node['platform']
+when 'debian', 'ubuntu'
+  include_recipe 'apt'
+  include_recipe 'build-essential'
+when 'redhat', 'centos', 'fedora'
+  include_recipe 'build-essential'
+  package 'ruby devel dependencies' do
+    package_name %w(openssl-devel readline-devel zlib-devel)
+    notifies :run, 'execute[stop app]'
+  end
 end
+
+# install ruby
 include_recipe 'ruby_build'
 ruby_build_ruby "app ruby version #{node['passenger']['ruby_version']}" do
   definition node['passenger']['ruby_version']

@@ -8,4 +8,5 @@ version '0.1.0'
 
 depends 'logrotate', '~> 1.9.2'
 depends 'build-essential', '~> 6.0.0'
+depends 'apt', '~> 4.0.1'
 depends 'ruby_build', '~> 0.8.0'
