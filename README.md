@@ -33,3 +33,17 @@ Enhancements and bug fixes are appreciated! Remember, this cookbook is designed 
 1. Create a feature or fix branch with an intuitive name (`fix/some-bug`, `feat/some-feature`)
 1. Add relevant tests (kitchen, chefspec, etc)
 1. Create a pull request back to this repo
+
+# Chef Supermarket
+
+This cookbook is available in [the community Chef Supermarket](https://supermarket.chef.io/cookbooks/simple_passenger). To push new versions:
+
+```shell
+bundle install --binstubs
+# make changes
+# update metadata version
+git commit -am 'some fixes'
+git push
+# push to github and supermarket
+bin/stove
+```
