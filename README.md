@@ -1,5 +1,7 @@
 # `simple_passenger` Chef cookbook
 
+[![Build Status](https://travis-ci.org/atheiman/simple-passenger-cookbook.svg?branch=master)](https://travis-ci.org/atheiman/simple-passenger-cookbook)
+
 Chef cookbook to deploy a rack based Ruby web application with
 [Passenger standalone](https://www.phusionpassenger.com/library/config/standalone/).
 
