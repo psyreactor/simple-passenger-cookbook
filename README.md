@@ -18,6 +18,8 @@ and the [attributes](./attributes/) directory for help with these attributes.
 
 # Testing
 
+Unit tests are run on all pushes to GitHub by [Travis CI](https://travis-ci.org/atheiman/simple-passenger-cookbook).
+
 ```shell
 # install gem dependencies
 bundle
@@ -46,6 +48,6 @@ bundle install --binstubs
 # update metadata version
 git commit -am 'some fixes'
 git push
-# push to github and supermarket
+# tag and push to supermarket
 bin/stove
 ```
