@@ -20,7 +20,7 @@ and the [attributes](./attributes/) directory for help with these attributes.
 # install gem dependencies
 bundle
 # unit tests
-bundle exec rspec
+bundle exec rake spec
 # integration tests
 bundle exec kitchen test
 ```
