@@ -4,7 +4,7 @@ maintainer_email 'atheimanksu@gmail.com'
 license 'all_rights'
 description 'Chef cookbook to deploy a rack based Ruby web application with Passenger standalone'
 long_description 'Chef cookbook to deploy a rack based Ruby web application with Passenger standalone'
-version '0.1.0'
+version '0.2.1'
 
 depends 'logrotate', '~> 1.9.2'
 depends 'build-essential', '~> 6.0.0'
