@@ -1,8 +1,8 @@
 # `simple_passenger` Chef cookbook
 
-[![Build Status](https://travis-ci.org/atheiman/simple-passenger-cookbook.svg?branch=master)](https://travis-ci.org/atheiman/simple-passenger-cookbook)
+[![Chef cookbook](https://img.shields.io/cookbook/v/simple_passenger.svg?maxAge=3600)](https://supermarket.chef.io/cookbooks/simple_passenger) [![Travis](https://img.shields.io/travis/atheiman/simple-passenger-cookbook.svg?maxAge=2592000)](https://travis-ci.org/atheiman/simple-passenger-cookbook)
 
-Chef cookbook to deploy a rack based Ruby web application with
+Chef cookbook to deploy a [Rack based Ruby web application](http://rack.github.io/) (Rails, Sinatra, etc) with
 [Passenger standalone](https://www.phusionpassenger.com/library/config/standalone/).
 
 # Usage
