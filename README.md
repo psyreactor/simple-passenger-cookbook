@@ -24,7 +24,7 @@ Unit tests are run on all pushes to GitHub by [Travis CI](https://travis-ci.org/
 # install gem dependencies
 bundle
 # unit tests
-bundle exec rake spec
+bundle exec rspec
 # integration tests
 bundle exec kitchen test
 ```
