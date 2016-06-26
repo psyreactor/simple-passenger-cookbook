@@ -10,6 +10,8 @@ namespace :integration do
     require 'kitchen'
     Kitchen.logger = Kitchen.default_file_logger
     @loader = Kitchen::Loader::YAML.new(local_config: '.kitchen.docker.yml')
+    # concurrent tests not possible with a rake task
+    # https://github.com/test-kitchen/test-kitchen/issues/374
     threads = []
     Kitchen::Config.new(loader: @loader).instances.each do |instance|
       threads << Thread.new do

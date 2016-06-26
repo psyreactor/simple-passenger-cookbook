@@ -121,7 +121,7 @@ end
 include_recipe 'build-essential'
 if %w(redhat centos fedora).include? node['platform']
   package 'ruby devel dependencies' do
-    package_name %w(openssl-devel readline-devel zlib-devel)
+    package_name %w(bzip2 openssl-devel readline-devel zlib-devel)
     notifies :run, 'execute[stop app]'
   end
 end
