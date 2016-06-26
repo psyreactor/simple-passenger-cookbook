@@ -7,9 +7,11 @@ Chef cookbook to deploy a [Rack based Ruby web application](http://rack.github.i
 
 # Usage
 
-Pretty straightforward, this cookbook only has one required attribute. Specify
-`['passenger']['git_repo']` pointing to your git repository (with the `.git` on the end) and call
-the default recipe to run your app with passenger standalone.
+Pretty straightforward, this cookbook only has one required attribute. Specify `['passenger']['git_repo']` pointing to your git repository (with the `.git` on the end) and call the default recipe to run your app with passenger standalone.
+
+This cookbook depends on the [`build-essential` cookbook](https://supermarket.chef.io/cookbooks/build-essential), which generally requires that `apt-get update` is run. `build-essential` provides this note:
+
+> **Note for Debian platform family:** On Debian platform-family systems, it is recommended that `apt-get update` be run, to ensure that the package cache is updated. It's not in the scope of this cookbook to do that, as it can [create a duplicate resource](https://tickets.chef.io/browse/CHEF-3694). We recommend using the [apt](https://supermarket.chef.io/cookbooks/apt) cookbook to do this.
 
 This cookbook also creates a `Passengerfile.json` using the attributes under
 `['passenger']['passengerfile']`. Refer to the

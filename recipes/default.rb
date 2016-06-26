@@ -118,12 +118,8 @@ template 'passengerfile' do
 end
 
 # prep system for ruby
-case node['platform']
-when 'debian', 'ubuntu'
-  include_recipe 'apt'
-  include_recipe 'build-essential'
-when 'redhat', 'centos', 'fedora'
-  include_recipe 'build-essential'
+include_recipe 'build-essential'
+if %w(redhat centos fedora).include? node['platform']
   package 'ruby devel dependencies' do
     package_name %w(openssl-devel readline-devel zlib-devel)
     notifies :run, 'execute[stop app]'
