@@ -7,8 +7,9 @@ desc 'Run Test Kitchen integration tests'
 namespace :integration do
   def kitchen_instances(regexp, config)
     instances = Kitchen::Config.new(config).instances
-    return instances if regexp.nil? || regexp == 'all'
-    instances.get_all(Regexp.new(regexp))
+    instances = instances.get_all(Regexp.new(regexp)) unless regexp.nil? || regexp == 'all'
+    raise Kitchen::UserError, "regexp '#{regexp}' matched 0 instances" if instances.empty?
+    instances
   end
 
   def run_kitchen(action, regexp, concurrency, loader_config = {})
@@ -20,7 +21,7 @@ namespace :integration do
     # minimum concurrent threads is 1
     concurrency = concurrency.to_i < 2 ? 1 : concurrency.to_i
     threads = []
-    kitchen_instances(regexp, config).each do |instance|
+    instances = kitchen_instances(regexp, config).each do |instance|
       until threads.map {|t| t.alive?}.count(true) < concurrency do sleep 5 end
       threads << Thread.new { instance.send(action) }
     end
