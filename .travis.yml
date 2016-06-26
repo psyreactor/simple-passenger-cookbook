@@ -8,4 +8,4 @@ before_script:
 
 script:
 - bundle exec rspec
-- travis_retry bundle exec rake integration:docker
+- travis_retry travis_wait bundle exec rake integration:docker
