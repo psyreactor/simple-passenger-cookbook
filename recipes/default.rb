@@ -157,7 +157,7 @@ execute 'bundle install' do
   cwd app_dir
   user node['passenger']['user']
   group node['passenger']['group']
-  not_if "#{File.join(ruby_bin_dir, 'bundle')} check", :cwd => app_dir
+  not_if "#{File.join(ruby_bin_dir, 'bundle')} check", cwd: app_dir
   notifies :run, 'execute[stop app]'
 end
 

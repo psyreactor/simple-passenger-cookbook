@@ -12,20 +12,31 @@ namespace :integration do
     instances
   end
 
-  def run_kitchen(action, regexp, concurrency, loader_config = {})
-    require 'kitchen'
-    Kitchen.logger = Kitchen.default_file_logger
-    action = 'test' if action.nil?
-    config = { loader: Kitchen::Loader::YAML.new(loader_config) }
-
+  def correct_concurrency(concurrency)
     # minimum concurrent threads is 1
-    concurrency = concurrency.to_i < 2 ? 1 : concurrency.to_i
+    concurrency.to_i < 2 ? 1 : concurrency.to_i
+  end
+
+  def apply_action_threaded(instances, action, concurrency)
     threads = []
-    instances = kitchen_instances(regexp, config).each do |instance|
-      until threads.map {|t| t.alive?}.count(true) < concurrency do sleep 5 end
+    instances.each do |instance|
+      sleep 3 until threads.map(&:alive?).count(true) < concurrency
       threads << Thread.new { instance.send(action) }
     end
     threads.map(&:join)
+  end
+
+  def run_kitchen(action, regexp, concurrency, loader_config = {})
+    require 'kitchen'
+    Kitchen.logger = Kitchen.default_file_logger
+    config = { loader: Kitchen::Loader::YAML.new(loader_config) }
+
+    concurrency = correct_concurrency(concurrency)
+    apply_action_threaded(
+      kitchen_instances(regexp, config),
+      action || 'test',
+      correct_concurrency(concurrency)
+    )
   end
 
   desc 'Run integration tests with kitchen-vagrant'

@@ -9,7 +9,7 @@ require 'spec_helper'
 describe 'simple_passenger::default' do
   context 'When all attributes are default, on an unspecified platform' do
     let(:chef_run) do
-      ChefSpec::ServerRunner.new do |node, server|
+      ChefSpec::SoloRunner.new do |node|
         node.set['passenger']['git_repo'] = 'https://github.com/atheiman/simple-sinatra.git'
       end
     end
