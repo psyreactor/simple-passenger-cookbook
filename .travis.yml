@@ -12,5 +12,4 @@ services:
 
 script:
 - bundle exec rspec
-- export KITCHEN_PROJECT_YAML=.kitchen.docker.yml
-- bundle exec kitchen verify -c 2
+- bundle exec rake integration:docker
