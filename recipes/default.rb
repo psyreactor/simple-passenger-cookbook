@@ -125,7 +125,7 @@ when 'debian', 'ubuntu'
     package_name %w(libssl-dev libreadline-dev zlib1g-dev)
     notifies :run, 'execute[stop app]'
   end
-when 'redhat', 'centos', 'fedora'
+when 'centos', 'redhat', 'amazon', 'scientific', 'oracle', 'fedora'
   package 'ruby devel dependencies' do
     package_name %w(bzip2 openssl-devel readline-devel zlib-devel)
     notifies :run, 'execute[stop app]'
