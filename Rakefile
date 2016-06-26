@@ -10,8 +10,12 @@ namespace :integration do
     require 'kitchen'
     Kitchen.logger = Kitchen.default_file_logger
     @loader = Kitchen::Loader::YAML.new(local_config: '.kitchen.docker.yml')
+    threads = []
     Kitchen::Config.new(loader: @loader).instances.each do |instance|
-      instance.test(:always)
+      threads << Thread.new do
+        instance.test(:always)
+      end
     end
+    threads.map(&:join)
   end
 end
