@@ -12,4 +12,4 @@ services:
 
 script:
 - bundle exec rspec
-- bundle exec rake integration:docker
+- travis_wait 30 bundle exec rake integration:docker
