@@ -20,20 +20,32 @@ and the [attributes](./attributes/) directory for help with these attributes.
 
 # Testing
 
-Unit tests are run on all pushes to GitHub by [Travis CI](https://travis-ci.org/atheiman/simple-passenger-cookbook).
+Chefspec unit tests and Test Kitchen integration tests are run on all pushes to GitHub by [Travis CI](https://travis-ci.org/atheiman/simple-passenger-cookbook).
 
 ```shell
 # install gem dependencies
 bundle
 # unit tests
 bundle exec rspec
-# integration tests
+# integration tests with kitchen-vagrant
 bundle exec kitchen test
+```
+
+Test Kitchen integration tests are on Travis CI use Docker via kitchen-docker. If you'd like to use Docker to run Test Kitchen integration tests locally:
+
+```shell
+# Ensure docker is running first
+# On Mac OS X you may need to have sudo commands available with no password,
+# the easiest way to do this is run a command as sudo so the next command won't prompt
+# for a password
+sudo ls
+# Run Test Kitchen integration tests with docker (uses concurrency)
+bundle exec rake integration:docker
 ```
 
 # Contributing
 
-Enhancements and bug fixes are appreciated! Remember, this cookbook is designed to be very simple.
+Enhancements and bug fixes are appreciated! Remember, this cookbook is designed to be simple.
 
 1. Fork the repo
 1. Create a feature or fix branch with an intuitive name (`fix/some-bug`, `feat/some-feature`)

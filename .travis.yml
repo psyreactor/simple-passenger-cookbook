@@ -12,4 +12,6 @@ services:
 
 script:
 - bundle exec rspec
+# needs travis_wait because ruby_build_ruby can take much longer than 10 min especially
+# with concurrent docker containers
 - travis_wait 30 bundle exec rake integration:docker
