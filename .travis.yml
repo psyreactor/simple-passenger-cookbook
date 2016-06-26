@@ -17,5 +17,7 @@ services:
 - docker
 
 script:
+- bundle exec foodcritic --context --progress .
+- bundle exec rubocop --lint --display-style-guide --extra-details --display-cop-names
 - bundle exec rspec
 - bundle exec rake integration:docker[test,$KITCHEN_REGEXP]
