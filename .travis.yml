@@ -5,9 +5,12 @@ rvm:
 
 sudo: required
 
+dist: trusty
+
 services:
   - docker
 
 script:
 - bundle exec rspec
-- KITCHEN_PROJECT_YAML=.kitchen.docker.yml bundle exec kitchen verify -c 2
+# travis_wait needed because ruby_build_ruby can take > 10 min
+- travis_wait KITCHEN_PROJECT_YAML=.kitchen.docker.yml bundle exec kitchen verify -c 2
