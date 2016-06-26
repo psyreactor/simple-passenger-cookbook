@@ -119,7 +119,13 @@ end
 
 # prep system for ruby
 include_recipe 'build-essential'
-if %w(redhat centos fedora).include? node['platform']
+case node['platform']
+when 'debian', 'ubuntu'
+  package 'ruby devel dependencies' do
+    package_name %w(libssl-dev libreadline-dev zlib1g-dev)
+    notifies :run, 'execute[stop app]'
+  end
+when 'redhat', 'centos', 'fedora'
   package 'ruby devel dependencies' do
     package_name %w(bzip2 openssl-devel readline-devel zlib-devel)
     notifies :run, 'execute[stop app]'
