@@ -1,11 +1,13 @@
 language: ruby
+
 rvm:
   - 2.2.5
-sudo: true
 
-before_script:
-- source <(curl -sL https://raw.githubusercontent.com/atheiman/simple-passenger-cookbook/master/start_docker.sh)
+sudo: required
+
+services:
+  - docker
 
 script:
 - bundle exec rspec
-- travis_wait bundle exec rake integration:docker
+- bundle exec kitchen verify -c 2
