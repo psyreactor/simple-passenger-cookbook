@@ -12,5 +12,5 @@ services:
 
 script:
 - bundle exec rspec
-# travis_wait needed because ruby_build_ruby can take > 10 min
-- travis_wait KITCHEN_PROJECT_YAML=.kitchen.docker.yml bundle exec kitchen verify -c 2
+- export KITCHEN_PROJECT_YAML=.kitchen.docker.yml
+- bundle exec kitchen verify -c 2
