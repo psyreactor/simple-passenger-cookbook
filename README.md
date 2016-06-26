@@ -43,6 +43,8 @@ sudo ls
 bundle exec rake integration:docker
 ```
 
+> Big thanks to https://github.com/zuazo/kitchen-in-travis for the Travis / Test Kitchen guide
+
 # Contributing
 
 Enhancements and bug fixes are appreciated! Remember, this cookbook is designed to be simple.
