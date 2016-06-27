@@ -8,16 +8,12 @@ rvm:
 - 2.3.1
 
 env:
-- KITCHEN_REGEXP=centos-67
-- KITCHEN_REGEXP=centos-72
-- KITCHEN_REGEXP=ubuntu-1404
-- KITCHEN_REGEXP=ubuntu-1604
+- SUITE=other
+- SUITE=centos
+- SUITE=ubuntu
 
 services:
 - docker
 
 script:
-- bundle exec foodcritic --context --progress .
-- bundle exec rubocop --lint --display-style-guide --extra-details --display-cop-names
-- bundle exec rspec
-- bundle exec rake integration:docker[test,$KITCHEN_REGEXP]
+- ./.travis.sh
