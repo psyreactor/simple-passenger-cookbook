@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rake', '~> 11.2'
+gem 'chef', '~> 12.12'
 gem 'berkshelf', '~> 4.3'
 gem 'stove', '~> 4.1'
 gem 'test-kitchen', '~> 1.10'
