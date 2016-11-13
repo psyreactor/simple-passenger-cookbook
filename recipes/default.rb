@@ -42,7 +42,7 @@ execute 'stop app' do
   cwd app_dir
   # only stop the app if running
   only_if { File.exist?(passengerfile_options['pid_file']) }
-  # start the app immediately after stop
+  # start the app after stop (a dependency is updating, not just an app code upgrade)
   notifies :run, 'execute[start app]'
 end
 
@@ -103,6 +103,7 @@ git 'app' do
   revision node['passenger']['git_revision']
   user node['passenger']['user']
   group node['passenger']['group']
+  # this is somewhat unnecessary because restart resource already subscribes to this resource
   notifies :run, 'execute[restart app]'
 end
 
@@ -158,6 +159,7 @@ execute 'bundle install' do
   user node['passenger']['user']
   group node['passenger']['group']
   not_if "#{File.join(ruby_bin_dir, 'bundle')} check", cwd: app_dir
+  # this is somewhat unnecessary because start app should be run if app is not running
   notifies :run, 'execute[stop app]'
 end
 
