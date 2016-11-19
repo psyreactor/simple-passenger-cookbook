@@ -1,36 +1,37 @@
-# derived attributes / conditional assignment
-# https://christinemdraper.wordpress.com/2014/10/06/avoiding-the-possible-pitfalls-of-derived-attributes/
-ruby_bin_dir = File.join(
+node.run_state['ruby_bin_dir'] = File.join(
   node['ruby_build']['default_ruby_base_path'],
   node['passenger']['ruby_version'],
   'bin'
 )
-app_dir = node['passenger']['app_dir'] || File.join('/opt', node['passenger']['app_name'])
-log_dir = node['passenger']['log_dir'] || File.join('/var/log', node['passenger']['app_name'])
-pid_dir = node['passenger']['pid_dir'] || File.join('/var/run', node['passenger']['app_name'])
-passengerfile_options = node['passenger']['passengerfile'].to_hash
-passengerfile_options['log_file'] = node['passenger']['passengerfile']['log_file'] || File.join(
-  log_dir,
-  node['passenger']['app_name']
-)
-passengerfile_options['pid_file'] = node['passenger']['passengerfile']['pid_file'] || File.join(
-  pid_dir,
-  node['passenger']['app_name'] + '.pid'
-)
-passengerfile_options['user'] = node['passenger']['passengerfile']['user'] || \
-                                node['passenger']['user']
-passengerfile_options['ruby'] = node['passenger']['passengerfile']['ruby'] || File.join(
-  ruby_bin_dir,
-  'ruby'
-)
+node.run_state['app_dir'] = node['passenger']['app_dir'] || File.join('/opt', node['passenger']['app_name'])
+node.run_state['log_dir'] = node['passenger']['log_dir'] || File.join('/var/log', node['passenger']['app_name'])
+node.run_state['pid_dir'] = node['passenger']['pid_dir'] || File.join('/var/run', node['passenger']['app_name'])
+node.run_state['passengerfile_options'] = node['passenger']['passengerfile'].to_hash
+node.run_state['passengerfile_options']['log_file'] = node['passenger']['passengerfile']['log_file'] || \
+  File.join(
+    node.run_state['log_dir'],
+    node['passenger']['app_name']
+  )
+node.run_state['passengerfile_options']['pid_file'] = node['passenger']['passengerfile']['pid_file'] || \
+  File.join(
+    node.run_state['pid_dir'],
+    node['passenger']['app_name'] + '.pid'
+  )
+node.run_state['passengerfile_options']['user'] = node['passenger']['passengerfile']['user'] || \
+  node['passenger']['user']
+node.run_state['passengerfile_options']['ruby'] = node['passenger']['passengerfile']['ruby'] || \
+  File.join(
+    node.run_state['ruby_bin_dir'],
+    'ruby'
+  )
 
 # restart the app (if app was running)
 execute 'restart app' do
   action :nothing
-  command "#{File.join(ruby_bin_dir, 'bundle')} exec passenger-config restart-app #{app_dir}"
-  cwd app_dir
+  command "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} exec passenger-config restart-app #{node.run_state['app_dir']}"
+  cwd node.run_state['app_dir']
   # only restart the app if the app is already running
-  only_if { File.exist?(passengerfile_options['pid_file']) }
+  only_if { File.exist?(node.run_state['passengerfile_options']['pid_file']) }
   # should be run on any of the following changes
   subscribes :run, 'git[app]'
 end
@@ -38,10 +39,10 @@ end
 # stop the app (if something has changed)
 execute 'stop app' do
   action :nothing
-  command "#{File.join(ruby_bin_dir, 'bundle')} exec passenger stop"
-  cwd app_dir
+  command "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} exec passenger stop"
+  cwd node.run_state['app_dir']
   # only stop the app if running
-  only_if { File.exist?(passengerfile_options['pid_file']) }
+  only_if { File.exist?(node.run_state['passengerfile_options']['pid_file']) }
   # start the app after stop (a dependency is updating, not just an app code upgrade)
   notifies :run, 'execute[start app]'
 end
@@ -59,7 +60,7 @@ end
 
 # create log directory
 directory 'app log dir' do
-  path log_dir
+  path node.run_state['log_dir']
   owner node['passenger']['user']
   group node['passenger']['group']
   mode node['passenger']['log_dir_mode']
@@ -70,7 +71,7 @@ end
 include_recipe 'logrotate'
 logrotate_app node['passenger']['app_name'] do
   cookbook 'logrotate'
-  path passengerfile_options['log_file']
+  path node.run_state['passengerfile_options']['log_file']
   frequency 'daily'
   create "644 #{node['passenger']['user']} #{node['passenger']['group']}"
   rotate 7
@@ -79,7 +80,7 @@ end
 
 # create pid dir
 directory 'pid dir' do
-  path pid_dir
+  path node.run_state['pid_dir']
   owner node['passenger']['user']
   group node['passenger']['group']
   mode node['passenger']['pid_dir_mode']
@@ -88,7 +89,7 @@ end
 
 # create app root
 directory 'app dir' do
-  path app_dir
+  path node.run_state['app_dir']
   owner node['passenger']['user']
   group node['passenger']['group']
   mode node['passenger']['app_dir_mode']
@@ -98,7 +99,7 @@ end
 # git app
 package 'git'
 git 'app' do
-  destination app_dir
+  destination node.run_state['app_dir']
   repository node['passenger']['git_repo']
   revision node['passenger']['git_revision']
   user node['passenger']['user']
@@ -109,12 +110,12 @@ end
 
 # create the Passengerfile.json
 template 'passengerfile' do
-  path File.join(app_dir, 'Passengerfile.json')
+  path File.join(node.run_state['app_dir'], 'Passengerfile.json')
   source 'Passengerfile.json.erb'
   mode node['passenger']['passengerfile_mode']
   owner node['passenger']['user']
   group node['passenger']['group']
-  variables options: passengerfile_options
+  variables options: node.run_state['passengerfile_options']
   notifies :run, 'execute[stop app]'
 end
 
@@ -154,19 +155,19 @@ end
 
 # install gem dependencies
 execute 'bundle install' do
-  command "#{File.join(ruby_bin_dir, 'bundle')} install --deployment --without development test"
-  cwd app_dir
+  command "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} install --deployment --without development test"
+  cwd node.run_state['app_dir']
   user node['passenger']['user']
   group node['passenger']['group']
-  not_if "#{File.join(ruby_bin_dir, 'bundle')} check", cwd: app_dir
+  not_if "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} check", cwd: node.run_state['app_dir']
   # this is somewhat unnecessary because start app should be run if app is not running
   notifies :run, 'execute[stop app]'
 end
 
 # start the app (if app was not running)
 execute 'start app' do
-  command "#{File.join(ruby_bin_dir, 'bundle')} exec passenger start"
-  cwd app_dir
+  command "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} exec passenger start"
+  cwd node.run_state['app_dir']
   # dont start the app if the app is already running
-  not_if { File.exist?(passengerfile_options['pid_file']) }
+  not_if { File.exist?(node.run_state['passengerfile_options']['pid_file']) }
 end

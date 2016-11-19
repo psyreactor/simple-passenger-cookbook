@@ -1,5 +1,5 @@
-# Commented attributes may be set, otherwise they will be defaulted in a recipe. Search for the
-# attribute in the recipes to determine the default value.
+# Commented attributes may be set, otherwise they will be defaulted in a recipe. Search in the
+# recipes to determine the default value.
 # More information on this approach:
 # https://christinemdraper.wordpress.com/2014/10/06/avoiding-the-possible-pitfalls-of-derived-attributes/
 
