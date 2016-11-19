@@ -148,7 +148,6 @@ execute 'bundle install' do
   user node['passenger']['user']
   group node['passenger']['group']
   not_if "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} check", cwd: node.run_state['app_dir']
-  # this is somewhat unnecessary because start app should be run if app is not running
   notifies :run, 'execute[stop app]'
 end
 
@@ -157,5 +156,6 @@ execute 'start app' do
   command "#{File.join(node.run_state['ruby_bin_dir'], 'bundle')} exec passenger start"
   cwd node.run_state['app_dir']
   # dont start the app if the app is already running
+  # this is somewhat unnecessary because start app should run if app is was stopped
   not_if { File.exist?(node.run_state['passengerfile_options']['pid_file']) }
 end
