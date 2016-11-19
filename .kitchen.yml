@@ -1,9 +1,10 @@
 ---
 driver:
   name: vagrant
-  ## enable to interact with the test app on port 8080 of host machine
+  # # enable to interact with the test apps on host machine
   # network:
-  #   - ["forwarded_port", {guest: 80, host: 8080}]
+  #   - ["forwarded_port", {guest: 80, host: 1080}]
+  #   - ["forwarded_port", {guest: 8080, host: 1088}]
 
 provisioner:
   name: chef_zero
@@ -26,6 +27,12 @@ suites:
   - name: default
     run_list:
       - recipe[simple_passenger::default]
+      - recipe[lwrp_app::default]
     attributes:
       passenger:
-        git_repo: https://github.com/atheiman/simple-sinatra.git
+        apps:
+          attributes-app:
+            git_repo: https://github.com/atheiman/simple-sinatra.git
+            passengerfile_options:
+              port: 8080
+              environment: attributes-app-environment
