@@ -1,5 +1,9 @@
 language: ruby
 
+gemfile:
+- Gemfile
+- chef-12.5.Gemfile
+
 sudo: required
 
 dist: trusty
@@ -16,4 +20,9 @@ services:
 - docker
 
 script:
-- ./.travis.sh
+- bundle exec ./.travis.sh
+
+matrix:
+  allow_failures:
+  - gemfile: chef-12.5.Gemfile
+  fast_finish: true
