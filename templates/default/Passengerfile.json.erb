@@ -1,1 +1,1 @@
-<%= Chef::JSONCompat.to_json_pretty(@options) %>
+<%= Chef::JSONCompat.to_json_pretty(Hash[@options.sort]) %>

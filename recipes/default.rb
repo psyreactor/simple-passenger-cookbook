@@ -6,24 +6,17 @@ node.run_state['ruby_bin_dir'] = File.join(
 node.run_state['app_dir'] = node['passenger']['app_dir'] || File.join('/opt', node['passenger']['app_name'])
 node.run_state['log_dir'] = node['passenger']['log_dir'] || File.join('/var/log', node['passenger']['app_name'])
 node.run_state['pid_dir'] = node['passenger']['pid_dir'] || File.join('/var/run', node['passenger']['app_name'])
-node.run_state['passengerfile_options'] = node['passenger']['passengerfile'].to_hash
-node.run_state['passengerfile_options']['log_file'] = node['passenger']['passengerfile']['log_file'] || \
-  File.join(
-    node.run_state['log_dir'],
-    node['passenger']['app_name']
-  )
-node.run_state['passengerfile_options']['pid_file'] = node['passenger']['passengerfile']['pid_file'] || \
-  File.join(
-    node.run_state['pid_dir'],
-    node['passenger']['app_name'] + '.pid'
-  )
-node.run_state['passengerfile_options']['user'] = node['passenger']['passengerfile']['user'] || \
-  node['passenger']['user']
-node.run_state['passengerfile_options']['ruby'] = node['passenger']['passengerfile']['ruby'] || \
-  File.join(
-    node.run_state['ruby_bin_dir'],
-    'ruby'
-  )
+
+# passengerfile options created from sensible defaults merged with attributes set
+passengerfile_defaults = {
+  'log_file' => File.join(node.run_state['log_dir'], node['passenger']['app_name']),
+  'pid_file' => File.join(node.run_state['pid_dir'], node['passenger']['app_name'] + '.pid'),
+  'user' => node['passenger']['user'],
+  'ruby' => File.join(node.run_state['ruby_bin_dir'], 'ruby')
+}
+node.run_state['passengerfile_options'] = passengerfile_defaults.merge(
+  node['passenger']['passengerfile'].to_hash
+)
 
 # restart the app (if app was running)
 execute 'restart app' do

@@ -78,10 +78,12 @@ shared_examples 'common attribute setting and resource behavior' do
     expect(chef_run).to create_template("#{app_dir}/Passengerfile.json").with(
       mode: '0664',
       owner: passenger_user,
-      group: passenger_group
+      group: passenger_group,
+      variables: {options: passengerfile_options}
     )
+
     expect(chef_run).to render_file("#{app_dir}/Passengerfile.json").with_content(
-      Chef::JSONCompat.to_json_pretty(passengerfile_options)
+      Chef::JSONCompat.to_json_pretty(Hash[passengerfile_options.sort])
     )
     expect(
       chef_run.template("#{app_dir}/Passengerfile.json")
