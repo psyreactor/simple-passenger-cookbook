@@ -21,3 +21,8 @@ services:
 
 script:
 - bundle exec ./.travis.sh
+
+matrix:
+  allow_failures:
+  - gemfile: chef-12.5.Gemfile
+  fast_finish: true
