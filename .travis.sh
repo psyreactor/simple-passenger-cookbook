@@ -8,8 +8,6 @@ other)
   bundle exec rspec
   ;;
 *)
-  if [[ "${TRAVIS_PULL_REQUEST}" = "false" ]]; then
-    bundle exec rake integration:docker[test,"$SUITE",2]
-  fi
+  bundle exec rake integration:docker[test,"$SUITE",2]
   ;;
 esac
