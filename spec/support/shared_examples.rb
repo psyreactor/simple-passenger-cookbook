@@ -75,18 +75,18 @@ shared_examples 'common attribute setting and resource behavior' do
   end
 
   it 'templates the passengerfile' do
-    expect(chef_run).to create_template("#{app_dir}/Passengerfile.json").with(
+    expect(chef_run).to create_template(File.join(app_dir, 'Passengerfile.json')).with(
       mode: '0664',
       owner: passenger_user,
       group: passenger_group,
       variables: {options: passengerfile_options}
     )
 
-    expect(chef_run).to render_file("#{app_dir}/Passengerfile.json").with_content(
+    expect(chef_run).to render_file(File.join(app_dir, 'Passengerfile.json')).with_content(
       Chef::JSONCompat.to_json_pretty(Hash[passengerfile_options.sort])
     )
     expect(
-      chef_run.template("#{app_dir}/Passengerfile.json")
+      chef_run.template(File.join(app_dir, 'Passengerfile.json'))
     ).to notify('execute[stop app]').to(:run).delayed
   end
 
@@ -103,7 +103,7 @@ shared_examples 'common attribute setting and resource behavior' do
     #  chef_run.ruby_build_ruby("app ruby version #{ruby_version}")
     #).to notify('execute[stop app]').to(:run).delayed
     expect(chef_run).to install_gem_package('bundler').with(
-      gem_binary: "#{ruby_bin_dir}/gem",
+      gem_binary: File.join(ruby_bin_dir, 'gem'),
       version: '~> 1.12.0'
     )
     expect(chef_run.gem_package('bundler')).to notify('execute[stop app]').to(:run).delayed
