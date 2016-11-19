@@ -15,12 +15,29 @@ describe 'simple_passenger::default' do
   end
 
   context 'initial install of app, default atttributes, centos' do
-    let(:app_name) { 'default_app' }
     let(:git_repo) { 'https://github.com/some-org/some-app.git' }
-    let(:git_revision) { 'master' }
+
+    let(:ruby_version) { '2.2.5' }
+
     let(:passenger_user) { 'passenger' }
     let(:passenger_group) { 'passenger' }
-    let(:ruby_bin_dir) { '/usr/local/ruby/2.2.5/bin' }
+    let(:app_name) { 'default_app' }
+    let(:ruby_bin_dir) { "/usr/local/ruby/#{ruby_version}/bin" }
+    let(:app_dir) { '/opt/default_app' }
+    let(:log_dir) { '/var/log/default_app' }
+    let(:pid_dir) { '/var/run/default_app' }
+    let(:passengerfile_options) do
+      {
+        'daemonize' => true,
+        'environment' => 'production',
+        'log_file' => '/var/log/default_app/default_app',
+        'pid_file' => '/var/run/default_app/default_app.pid',
+        'port' => 80,
+        'ruby' => "/usr/local/ruby/#{ruby_version}/bin/ruby",
+        'user' => 'passenger'
+      }
+    end
+    let(:git_revision) { 'master' }
 
     cached(:chef_run) do
       ChefSpec::SoloRunner.new(platform: 'centos', version: '6.6') do |node|
@@ -29,19 +46,25 @@ describe 'simple_passenger::default' do
     end
 
     it 'sets attributes' do
+      expect(chef_run.node.run_state['ruby_bin_dir']).to eq(ruby_bin_dir)
+      expect(chef_run.node.run_state['app_dir']).to eq(app_dir)
+      expect(chef_run.node.run_state['log_dir']).to eq(log_dir)
+      expect(chef_run.node.run_state['pid_dir']).to eq(pid_dir)
+      expect(chef_run.node.run_state['passengerfile_options']).to eq(passengerfile_options)
+
       expect(chef_run.node['passenger']).to eq(
-        { "user" => passenger_user,
-          "group" => passenger_group,
-          "app_name" => app_name,
-          "log_dir_mode" => "0774",
-          "app_dir_mode" => "0774",
-          "git_revision" => git_revision,
-          "ruby_version" => "2.2.5",
-          "bundler_version" => "~> 1.12.0",
-          "pid_dir_mode" => "0774",
-          "passengerfile_mode" => "0664",
-          "passengerfile" => { "daemonize" => true, "port" => 80, "environment" => "production" },
-          "git_repo" => git_repo }
+        { 'user' => passenger_user,
+          'group' => passenger_group,
+          'app_name' => app_name,
+          'log_dir_mode' => '0774',
+          'app_dir_mode' => '0774',
+          'git_revision' => git_revision,
+          'ruby_version' => ruby_version,
+          'bundler_version' => '~> 1.12.0',
+          'pid_dir_mode' => '0774',
+          'passengerfile_mode' => '0664',
+          'passengerfile' => { 'daemonize' => true, 'port' => 80, 'environment' => 'production' },
+          'git_repo' => git_repo }
       )
     end
 
@@ -53,16 +76,16 @@ describe 'simple_passenger::default' do
     end
 
     it 'creates the log directory with logrotate' do
-      expect(chef_run).to create_directory("/var/log/#{app_name}").with(
+      expect(chef_run).to create_directory(log_dir).with(
         owner: passenger_user,
         group: passenger_group,
         mode: '0774'
       )
-      expect(chef_run.directory("/var/log/#{app_name}")).to notify('execute[stop app]').to(:run).delayed
+      expect(chef_run.directory(log_dir)).to notify('execute[stop app]').to(:run).delayed
 
       expect(chef_run).to enable_logrotate_app(app_name).with(
         cookbook: 'logrotate',
-        path: "/var/log/#{app_name}",
+        path: log_dir,
         frequency: 'daily',
         create: "644 #{passenger_user} #{passenger_group}",
         rotate: 7
@@ -72,23 +95,23 @@ describe 'simple_passenger::default' do
     end
 
     it 'creates directories for the app' do
-      expect(chef_run).to create_directory("/var/run/#{app_name}").with(
+      expect(chef_run).to create_directory(pid_dir).with(
         user: passenger_user,
         group: passenger_group,
         mode: '0774'
       )
-      expect(chef_run.directory("/var/run/#{app_name}")).to notify('execute[stop app]').to(:run).delayed
+      expect(chef_run.directory(pid_dir)).to notify('execute[stop app]').to(:run).delayed
 
-      expect(chef_run).to create_directory("/opt/#{app_name}").with(
+      expect(chef_run).to create_directory(app_dir).with(
         user: passenger_user,
         group: passenger_group,
         mode: '0774'
       )
-      expect(chef_run.directory("/opt/#{app_name}")).to notify('execute[stop app]').to(:run).delayed
+      expect(chef_run.directory(app_dir)).to notify('execute[stop app]').to(:run).delayed
 
       expect(chef_run).to install_package('git')
       expect(chef_run).to sync_git('app').with(
-        destination: "/opt/#{app_name}",
+        destination: app_dir,
         repository: git_repo,
         revision: git_revision,
         user: passenger_user,
@@ -98,12 +121,12 @@ describe 'simple_passenger::default' do
     end
 
     it 'templates the passengerfile' do
-      expect(chef_run).to create_template("/opt/#{app_name}/Passengerfile.json").with(
+      expect(chef_run).to create_template("#{app_dir}/Passengerfile.json").with(
         mode: '0664',
         owner: passenger_user,
         group: passenger_group
       )
-      expect(chef_run).to render_file("/opt/#{app_name}/Passengerfile.json").with_content(
+      expect(chef_run).to render_file("#{app_dir}/Passengerfile.json").with_content(
 "{
   \"daemonize\": true,
   \"port\": 80,
@@ -115,7 +138,7 @@ describe 'simple_passenger::default' do
 }"
       )
       expect(
-        chef_run.template("/opt/#{app_name}/Passengerfile.json")
+        chef_run.template("#{app_dir}/Passengerfile.json")
       ).to notify('execute[stop app]').to(:run).delayed
     end
 
@@ -128,12 +151,12 @@ describe 'simple_passenger::default' do
       expect(chef_run.package('ruby devel dependencies')).to notify('execute[stop app]').to(:run).delayed
 
       expect(chef_run).to include_recipe('ruby_build')
-      expect(chef_run).to install_ruby_build_ruby('app ruby version 2.2.5').with(
-        definition: '2.2.5'
+      expect(chef_run).to install_ruby_build_ruby("app ruby version #{ruby_version}").with(
+        definition: ruby_version
       )
       # not sure how to do this:
       #expect(
-      #  chef_run.ruby_build_ruby('app ruby version 2.2.5')
+      #  chef_run.ruby_build_ruby("app ruby version #{ruby_version}")
       #).to notify('execute[stop app]').to(:run).delayed
       expect(chef_run).to install_gem_package('bundler').with(
         gem_binary: "#{ruby_bin_dir}/gem",
@@ -144,7 +167,7 @@ describe 'simple_passenger::default' do
       expect(chef_run).to run_execute(
         "#{ruby_bin_dir}/bundle install --deployment --without development test"
       ).with(
-        cwd: "/opt/#{app_name}",
+        cwd: app_dir,
         user: passenger_user,
         group: passenger_group
       )
@@ -154,16 +177,16 @@ describe 'simple_passenger::default' do
     it 'has resources for starting, stopping, and restarting the app' do
       # restart execute resource
       restart_execute = chef_run.execute('restart app')
-      expect(restart_execute.cwd).to eq("/opt/#{app_name}")
+      expect(restart_execute.cwd).to eq(app_dir)
       expect(restart_execute.command).to eq(
-        "#{ruby_bin_dir}/bundle exec passenger-config restart-app /opt/#{app_name}"
+        "#{ruby_bin_dir}/bundle exec passenger-config restart-app #{app_dir}"
       )
       expect(restart_execute).to do_nothing
       expect(restart_execute).to subscribe_to('git[app]').on(:run).delayed
 
       # stop execute resource
       stop_execute = chef_run.execute('stop app')
-      expect(stop_execute.cwd).to eq("/opt/#{app_name}")
+      expect(stop_execute.cwd).to eq(app_dir)
       expect(stop_execute.command).to eq(
         "#{ruby_bin_dir}/bundle exec passenger stop"
       )
@@ -172,7 +195,7 @@ describe 'simple_passenger::default' do
 
       # start execute resource
       expect(chef_run).to run_execute('start app').with(
-        cwd: "/opt/#{app_name}",
+        cwd: app_dir,
         command: "#{ruby_bin_dir}/bundle exec passenger start"
       )
     end
