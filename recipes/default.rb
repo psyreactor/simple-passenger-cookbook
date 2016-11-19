@@ -136,12 +136,7 @@ end
 
 # install bundler
 gem_package 'bundler' do
-  gem_binary File.join(
-    node['ruby_build']['default_ruby_base_path'],
-    node['passenger']['ruby_version'],
-    'bin',
-    'gem'
-  )
+  gem_binary File.join(node.run_state['ruby_bin_dir'], 'gem')
   version node['passenger']['bundler_version']
   notifies :run, 'execute[stop app]'
 end
