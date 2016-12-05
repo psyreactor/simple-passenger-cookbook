@@ -8,9 +8,9 @@ property :bundler_version, String, required: true, default: '~> 1.13'
 
 # passengerfile options are merged with sensible defaults
 property :passengerfile_options, Hash, required: false, default: {}
-property :passengerfile_mode, String, required: false, default: '644'
+property :passengerfile_mode, [String, Integer], required: false, default: '644'
 
-property :log_dir_mode, String, required: true, default: '0755'
+property :log_dir_mode, [String, Integer], required: true, default: '0755'
 property :logrotate_frequency, String, required: true, default: 'daily'
 property :logrotate_rotate, Integer, required: true, default: 7
 
