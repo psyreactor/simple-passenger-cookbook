@@ -1,10 +1,12 @@
 set -ev
 
 case $SUITE in
-other)
+chefspec)
+  rspec
+  ;;
+lint)
   foodcritic --context --progress .
   rubocop --lint --display-style-guide --extra-details --display-cop-names
-  rspec
   ;;
 *)
   rake integration:docker[test,"$SUITE",2]

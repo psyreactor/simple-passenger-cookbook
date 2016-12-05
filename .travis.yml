@@ -12,7 +12,8 @@ rvm:
 - 2.3.1
 
 env:
-- SUITE=other
+- SUITE=chefspec
+- SUITE=lint
 - SUITE=centos
 - SUITE=ubuntu
 
@@ -25,4 +26,5 @@ script:
 matrix:
   allow_failures:
   - gemfile: chef-12.5.Gemfile
+  - env: SUITE=lint
   fast_finish: true

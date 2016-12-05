@@ -4,11 +4,6 @@ describe 'simple_passenger::default' do
   context 'runs Passenger app(s) from attributes' do
     let(:passengerfile) { '/opt/passenger/attributes-app/Passengerfile.json' }
     let(:passengerfile_options) { JSON.parse(File.read(passengerfile)) }
-    # attributes-app:
-    #   git_repo: https://github.com/atheiman/simple-sinatra.git
-    #   passengerfile_options:
-    #     port: 8080
-    #     environment: attributes-app-environment
 
     it 'creates Passengerfile.json' do
       expect(file(passengerfile)).to be_file
