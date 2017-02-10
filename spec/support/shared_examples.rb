@@ -77,7 +77,7 @@ shared_examples 'default recipe behavior' do
       mode: '755'
     )
     app_dir = chef_run.directory('/opt/passenger/attributes-app')
-    expect(log_dir).to notify('execute[stop attributes-app]').to(:run).delayed
+    expect(app_dir).to notify('execute[stop attributes-app]').to(:run).delayed
 
     expect(chef_run).to sync_git('/opt/passenger/attributes-app')
     git_sync = chef_run.git('/opt/passenger/attributes-app')

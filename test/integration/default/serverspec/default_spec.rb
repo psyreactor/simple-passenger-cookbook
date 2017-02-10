@@ -2,12 +2,12 @@ require 'spec_helper'
 
 describe 'simple_passenger::default' do
   context 'runs Passenger app(s) from attributes' do
-    let(:passengerfile) { '/opt/passenger/attributes-app/Passengerfile.json' }
-    let(:passengerfile_options) { JSON.parse(File.read(passengerfile)) }
+    let(:passengerfile_path) { '/opt/passenger/attributes-app/Passengerfile.json' }
+    let(:passengerfile) { JSON.parse(File.read(passengerfile_path)) }
 
     it 'creates Passengerfile.json' do
-      expect(file(passengerfile)).to be_file
-      expect(passengerfile_options).to eq({
+      expect(file(passengerfile_path)).to be_file
+      expect(passengerfile).to eq({
         'daemonize' => true,
         'environment' => 'attributes-app-environment',
         'log_file' => '/var/log/passenger/attributes-app/attributes-app.log',
@@ -18,35 +18,38 @@ describe 'simple_passenger::default' do
       })
     end
 
-    context 'simple sinatra app' do
-      it 'is running' do
-        res = Net::HTTP.get_response(URI('http://localhost:8080/'))
-        expect(res.code).to eq('200')
-        expect(res.body).to eq(
-          "SimpleApp is up and running!\nrack app environment: attributes-app-environment\n"
-        )
-      end
+    it 'app is running' do
+      res = Net::HTTP.get_response(URI('http://localhost:8080/'))
+      expect(res.code).to eq('200')
+      expect(res.body).to eq(
+        "SimpleApp is up and running!\nrack app environment: attributes-app-environment\n"
+      )
     end
   end
 end
 
 describe 'another cookbook calls the lwrp to run a Passenger app' do
-  # simple_passenger_app 'fixture-cookbook-app' do
-  #   app_name 'lwrp-app'
-  #   git_repo 'https://github.com/atheiman/simple-sinatra.git'
-  #   bundler_version '= 1.12.6'
-  #   passengerfile_options ruby: '/opt/chef/embedded/bin/ruby'
-  #   passengerfile_mode '777'
-  #   logrotate_frequency 'monthly'
-  # end
+  let(:passengerfile_path) { '/opt/passenger/lwrp-app/Passengerfile.json' }
+  let(:passengerfile) { JSON.parse(File.read(passengerfile_path)) }
 
-  context 'simple sinatra app' do
-    it 'is running' do
-      res = Net::HTTP.get_response(URI('http://localhost/'))
-      expect(res.code).to eq('200')
-      expect(res.body).to eq(
-        "SimpleApp is up and running!\nrack app environment: production\n"
-      )
-    end
+  it 'creates Passengerfile.json' do
+    expect(file(passengerfile_path)).to be_file
+    expect(passengerfile).to eq({
+      'daemonize' => true,
+      'environment' => 'production',
+      'log_file' => '/var/log/passenger/lwrp-app/lwrp-app.log',
+      'pid_file' => '/var/run/passenger/lwrp-app.pid',
+      'port' => 80,
+      'ruby' => '/opt/chef/embedded/bin/ruby',
+      'user' => 'lwrp-app'
+    })
+  end
+
+  it 'app is running' do
+    res = Net::HTTP.get_response(URI('http://localhost/'))
+    expect(res.code).to eq('200')
+    expect(res.body).to eq(
+      "SimpleApp is up and running!\nrack app environment: production\n"
+    )
   end
 end
