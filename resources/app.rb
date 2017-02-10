@@ -1,3 +1,5 @@
+require 'json'
+
 property :app_name, String, required: true, name_attribute: true, regex: /^[\w\.-]+$/
 
 property :git_repo, String, required: true
@@ -7,7 +9,7 @@ property :ruby_version, String, required: true, default: '2.2.5'
 property :bundler_version, String, required: true, default: '~> 1.13'
 
 # passengerfile options are merged with sensible defaults
-property :passengerfile_options, Hash, required: false, default: {}
+property :passengerfile, Hash, required: false, default: {}
 property :passengerfile_mode, [String, Integer], required: false, default: '644'
 
 property :log_dir_mode, [String, Integer], required: true, default: '0755'
@@ -117,27 +119,26 @@ action :run do
   end
 
   # create the Passengerfile.json
-  template "#{app_name} Passengerfile" do
+  file "#{app_name} Passengerfile" do
     path ::File.join(node.run_state['passenger'][app_name]['app_root'], 'Passengerfile.json')
-    source 'Passengerfile.json.erb'
-    cookbook 'simple_passenger'
     mode passengerfile_mode
     owner app_name
     group node['passenger']['group']
-    variables({
-      options: {
-        daemonize: true,
-        port: 80,
-        environment: 'production',
-        log_file: node.run_state['passenger'][app_name]['log_file'],
-        pid_file: node.run_state['passenger'][app_name]['pid_file'],
-        user: app_name,
-        ruby: ::File.join(node.run_state['passenger'][app_name]['ruby_bin_dir'], 'ruby')
-      }.merge(
-        # convert all keys to symbols before merge
-        Hash[passengerfile_options.map { |k,v| [k.to_sym,v] }]
-      )
-    })
+
+    config = {
+      daemonize: true,
+      port: 80,
+      environment: 'production',
+      log_file: node.run_state['passenger'][app_name]['log_file'],
+      pid_file: node.run_state['passenger'][app_name]['pid_file'],
+      user: app_name,
+      ruby: ::File.join(node.run_state['passenger'][app_name]['ruby_bin_dir'], 'ruby')
+    }.merge(
+      # convert all keys to symbols before merge
+      Hash[passengerfile.map { |k,v| [k.to_sym,v] }]
+    )
+    content(JSON.pretty_generate(Hash[ config.sort_by { |k,v| k.to_s } ]))
+
     notifies :run, "execute[stop #{app_name}]"
   end
 

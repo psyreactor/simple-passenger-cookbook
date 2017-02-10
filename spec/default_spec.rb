@@ -1,9 +1,3 @@
-#
-# Cookbook Name:: simple_passenger
-# Spec:: default
-#
-# Copyright (c) 2016 Austin Heiman, All Rights Reserved.
-
 require 'spec_helper'
 
 describe 'simple_passenger::default' do
@@ -19,12 +13,18 @@ describe 'simple_passenger::default' do
 
   context 'centos' do
     cached(:chef_run) do
-      ChefSpec::SoloRunner.new(step_into: ['simple_passenger_app'], platform: 'centos', version: '6.6') do |node|
-        node.set['passenger']['apps']['attributes-app']['git_repo'] = 'https://github.com/org/app.git'
-        node.set['passenger']['apps']['attributes-app']['passengerfile_options'] = {
-          'port' => 8080,
-          environment: 'attributes-app-environment'
-        }
+      ChefSpec::SoloRunner.new(
+        step_into: ['simple_passenger_app'],
+        platform: 'centos',
+        version: '6.6'
+      ) do |node|
+        node.set['passenger']['apps']['attributes-app'].tap do |app|
+          app['git_repo'] = 'https://github.com/org/app.git'
+          app['passengerfile'] = {
+            'port' => 8080,
+            environment: 'attributes-app-environment'
+          }
+        end
       end.converge(described_recipe)
     end
 
@@ -39,12 +39,18 @@ describe 'simple_passenger::default' do
 
   context 'ubuntu' do
     cached(:chef_run) do
-      ChefSpec::SoloRunner.new(step_into: ['simple_passenger_app'], platform: 'ubuntu', version: '16.04') do |node|
-        node.set['passenger']['apps']['attributes-app']['git_repo'] = 'https://github.com/org/app.git'
-        node.set['passenger']['apps']['attributes-app']['passengerfile_options'] = {
-          'port' => 8080,
-          environment: 'attributes-app-environment'
-        }
+      ChefSpec::SoloRunner.new(
+        step_into: ['simple_passenger_app'],
+        platform: 'ubuntu',
+        version: '16.04'
+      ) do |node|
+        node.set['passenger']['apps']['attributes-app'].tap do |app|
+          app['git_repo'] = 'https://github.com/org/app.git'
+          app['passengerfile'] = {
+            'port' => 8080,
+            environment: 'attributes-app-environment'
+          }
+        end
       end.converge(described_recipe)
     end
 

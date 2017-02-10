@@ -42,7 +42,7 @@ shared_examples 'default recipe behavior' do
   it 'calls the lwrp' do
     expect(chef_run).to run_simple_passenger_app('attributes-app').with({
       git_repo: 'https://github.com/org/app.git',
-      passengerfile_options: {'environment' => 'attributes-app-environment', 'port' => 8080}
+      passengerfile: {'environment' => 'attributes-app-environment', 'port' => 8080}
     })
   end
 
@@ -83,25 +83,21 @@ shared_examples 'default recipe behavior' do
     git_sync = chef_run.git('/opt/passenger/attributes-app')
     expect(git_sync).to notify('execute[restart attributes-app]').to(:run).delayed
 
-    expect(chef_run).to create_template('/opt/passenger/attributes-app/Passengerfile.json').with(
-      source: 'Passengerfile.json.erb',
-      cookbook: 'simple_passenger',
+    expect(chef_run).to create_file('/opt/passenger/attributes-app/Passengerfile.json').with(
       mode: '644',
       owner: 'attributes-app',
       group: 'passenger',
-      variables: {
-        options: {
-          daemonize: true,
-          port: 8080,
-          environment: 'attributes-app-environment',
-          log_file: '/var/log/passenger/attributes-app/attributes-app.log',
-          pid_file: '/var/run/passenger/attributes-app.pid',
-          user: 'attributes-app',
-          ruby: '/usr/local/ruby/2.2.5/bin/ruby'
-        }
-      }
+      content: JSON.pretty_generate({
+        daemonize: true,
+        environment: 'attributes-app-environment',
+        log_file: '/var/log/passenger/attributes-app/attributes-app.log',
+        pid_file: '/var/run/passenger/attributes-app.pid',
+        port: 8080,
+        ruby: '/usr/local/ruby/2.2.5/bin/ruby',
+        user: 'attributes-app'
+      })
     )
-    passengerfile_template = chef_run.template('/opt/passenger/attributes-app/Passengerfile.json')
+    passengerfile = chef_run.file('/opt/passenger/attributes-app/Passengerfile.json')
     expect(chef_run).to render_file(
       '/opt/passenger/attributes-app/Passengerfile.json'
     ).with_content('{
@@ -113,7 +109,7 @@ shared_examples 'default recipe behavior' do
   "ruby": "/usr/local/ruby/2.2.5/bin/ruby",
   "user": "attributes-app"
 }')
-    expect(passengerfile_template).to notify('execute[stop attributes-app]').to(:run).delayed
+    expect(passengerfile).to notify('execute[stop attributes-app]').to(:run).delayed
 
     expect(chef_run).to install_ruby_build_ruby('attributes-app ruby').with(
       definition: '2.2.5'

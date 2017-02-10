@@ -1,5 +1,6 @@
 require 'chefspec'
 require 'chefspec/berkshelf'
+require 'json'
 
 current_dir = File.dirname(File.expand_path(__FILE__))
 

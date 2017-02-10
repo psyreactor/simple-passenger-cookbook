@@ -45,11 +45,16 @@ include_recipe 'ruby_build'
 node.run_state['passenger'] = {}
 
 # build apps from attributes
-if node['passenger']['apps'].is_a?(Hash)
+if node['passenger']['apps'].empty?
+  Chef::Log.info do
+    "No Passenger apps found to deploy in node['passenger']['apps']."
+  end
+else
   node['passenger']['apps'].each do |app_name, app_definition|
-    Chef::Log.info(
-      "Deploying Passenger app from attribute definition at node['passenger']['apps'][#{app_name.inspect}]"
-    )
+    Chef::Log.info do
+      'Deploying Passenger app from attribute definition ' \
+      "node['passenger']['apps'][#{app_name.inspect}]"
+    end
 
     simple_passenger_app app_name do
       app_definition.each do |property, value|
@@ -57,6 +62,4 @@ if node['passenger']['apps'].is_a?(Hash)
       end
     end
   end
-else
-  Chef::Log.info("No Passenger apps found to deploy in node['passenger']['apps'].")
 end
