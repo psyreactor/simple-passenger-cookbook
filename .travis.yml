@@ -1,15 +1,17 @@
 language: ruby
 
-gemfile:
-- Gemfile
-- chef-12.5.Gemfile
+cache: bundler
 
 sudo: required
 
 dist: trusty
 
+before_install:
+  - gem update --system
+  - gem update bundler
+
 rvm:
-- 2.3.1
+- 2.3.3
 
 env:
 - SUITE=chefspec
@@ -25,6 +27,5 @@ script:
 
 matrix:
   allow_failures:
-  - gemfile: chef-12.5.Gemfile
   - env: SUITE=lint
   fast_finish: true
