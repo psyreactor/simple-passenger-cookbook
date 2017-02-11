@@ -13,7 +13,7 @@ describe 'simple_passenger::default' do
         'log_file' => '/var/log/passenger/attributes-app/attributes-app.log',
         'pid_file' => '/var/run/passenger/attributes-app.pid',
         'port' => 8080,
-        'ruby' => '/usr/local/ruby/2.2.5/bin/ruby',
+        'ruby' => '/usr/local/ruby/2.4.0/bin/ruby',
         'user' => 'attributes-app'
       })
     end

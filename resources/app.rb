@@ -5,7 +5,7 @@ property :app_name, String, required: true, name_attribute: true, regex: /^[\w\.
 property :git_repo, String, required: true
 property :git_revision, String, required: true, default: 'master'
 
-property :ruby_version, String, required: true, default: '2.2.5'
+property :ruby_version, String, required: true, default: '2.3.3'
 property :bundler_version, String, required: true, default: '~> 1.13'
 
 # passengerfile options are merged with sensible defaults

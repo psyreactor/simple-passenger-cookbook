@@ -12,7 +12,7 @@ describe 'another cookbook calls the lwrp to run a Passenger app' do
       'log_file' => '/var/log/passenger/lwrp-app/lwrp-app.log',
       'pid_file' => '/var/run/passenger/lwrp-app.pid',
       'port' => 80,
-      'ruby' => '/usr/local/ruby/2.3.3/bin/ruby',
+      'ruby' => '/usr/local/ruby/2.4.0/bin/ruby',
       'user' => 'lwrp-app'
     })
   end

@@ -29,3 +29,4 @@ suites:
             passengerfile:
               port: 8080
               environment: attributes-app-environment
+            ruby_version: 2.4.0

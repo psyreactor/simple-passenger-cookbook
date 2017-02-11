@@ -33,8 +33,8 @@ shared_examples 'default recipe behavior' do
         'log_dir' => '/var/log/passenger/attributes-app',
         'log_file' => '/var/log/passenger/attributes-app/attributes-app.log',
         'pid_file' => '/var/run/passenger/attributes-app.pid',
-        'ruby_bin_dir' => '/usr/local/ruby/2.2.5/bin',
-        'bundle_bin' => '/usr/local/ruby/2.2.5/bin/bundle'
+        'ruby_bin_dir' => '/usr/local/ruby/2.3.3/bin',
+        'bundle_bin' => '/usr/local/ruby/2.3.3/bin/bundle'
       }
     })
   end
@@ -93,7 +93,7 @@ shared_examples 'default recipe behavior' do
         log_file: '/var/log/passenger/attributes-app/attributes-app.log',
         pid_file: '/var/run/passenger/attributes-app.pid',
         port: 8080,
-        ruby: '/usr/local/ruby/2.2.5/bin/ruby',
+        ruby: '/usr/local/ruby/2.3.3/bin/ruby',
         user: 'attributes-app'
       })
     )
@@ -106,26 +106,26 @@ shared_examples 'default recipe behavior' do
   "log_file": "/var/log/passenger/attributes-app/attributes-app.log",
   "pid_file": "/var/run/passenger/attributes-app.pid",
   "port": 8080,
-  "ruby": "/usr/local/ruby/2.2.5/bin/ruby",
+  "ruby": "/usr/local/ruby/2.3.3/bin/ruby",
   "user": "attributes-app"
 }')
     expect(passengerfile).to notify('execute[stop attributes-app]').to(:run).delayed
 
     expect(chef_run).to install_ruby_build_ruby('attributes-app ruby').with(
-      definition: '2.2.5'
+      definition: '2.3.3'
     )
     ruby_build = chef_run.ruby_build_ruby('attributes-app ruby')
     expect(ruby_build).to notify('execute[stop attributes-app]').to(:run).delayed
 
     expect(chef_run).to install_gem_package('bundler').with(
-      gem_binary: '/usr/local/ruby/2.2.5/bin/gem',
+      gem_binary: '/usr/local/ruby/2.3.3/bin/gem',
       version: '~> 1.13'
     )
     bundler_package = chef_run.gem_package('attributes-app bundler')
     expect(bundler_package).to notify('execute[stop attributes-app]').to(:run).delayed
 
     expect(chef_run).to run_execute(
-      '/usr/local/ruby/2.2.5/bin/bundle install --deployment --without development test'
+      '/usr/local/ruby/2.3.3/bin/bundle install --deployment --without development test'
     ).with(
       cwd: '/opt/passenger/attributes-app',
       user: 'attributes-app',
@@ -137,7 +137,7 @@ shared_examples 'default recipe behavior' do
     restart_execute = chef_run.execute('restart attributes-app')
     expect(restart_execute.cwd).to eq('/opt/passenger/attributes-app')
     expect(restart_execute.command).to eq(
-      '/usr/local/ruby/2.2.5/bin/bundle exec passenger-config restart-app /opt/passenger/attributes-app'
+      '/usr/local/ruby/2.3.3/bin/bundle exec passenger-config restart-app /opt/passenger/attributes-app'
     )
     expect(restart_execute).to do_nothing
     expect(restart_execute).to subscribe_to('git[attributes-app]').on(:run).delayed
@@ -145,14 +145,14 @@ shared_examples 'default recipe behavior' do
     stop_execute = chef_run.execute('stop attributes-app')
     expect(stop_execute.cwd).to eq('/opt/passenger/attributes-app')
     expect(stop_execute.command).to eq(
-      '/usr/local/ruby/2.2.5/bin/bundle exec passenger stop'
+      '/usr/local/ruby/2.3.3/bin/bundle exec passenger stop'
     )
     expect(stop_execute).to do_nothing
     expect(stop_execute).to notify('execute[start attributes-app]').to(:run).delayed
 
     expect(chef_run).to run_execute('start attributes-app').with(
       cwd: '/opt/passenger/attributes-app',
-      command: '/usr/local/ruby/2.2.5/bin/bundle exec passenger start'
+      command: '/usr/local/ruby/2.3.3/bin/bundle exec passenger start'
     )
   end
 end
