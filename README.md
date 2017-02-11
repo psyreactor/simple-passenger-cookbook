@@ -22,10 +22,11 @@ Property | Ruby class | Examples | Description
 `git_repo` | String | `'https://github.com/user/my-app.git'` | The URI for the git repository. See [the Chef `git` resource](https://docs.chef.io/resource_git.html).
 `git_revision` | String | `'master'`, `'v1.2.3'` | The URI for the git repository. See [the Chef `git` resource](https://docs.chef.io/resource_git.html).
 `ruby_version` | String | `'2.2.6'`, `'jruby-9.1.6.0'` | [`ruby-build` definition](https://github.com/rbenv/ruby-build) to install. See [the `ruby_build_ruby` LWRP](https://github.com/sous-chefs/ruby_build#ruby_build_ruby).
+`ruby_bin` | String | `'/path/to/ruby'`, `'/opt/chef/embedded/bin/ruby'` | Path of a different Ruby to use (should be in a `bin/` directory). Setting this prevents installing a Ruby with [the `ruby_build_ruby` LWRP](https://github.com/sous-chefs/ruby_build#ruby_build_ruby).
 `bundler_version` | String | `'1.13.1'`, `'~> 1.12'` | Version of Bundler to install (should be a RubyGems version specification).
 `passengerfile` | Hash | `{ environment: 'development', port: 8080 }` | Properties to specify in [`Passengerfile.json`](https://www.phusionpassenger.com/library/config/standalone/reference/) (will be merged over sensible defaults).
-`passengerfile_mode` | [String, Integer] | `'644'` | Permissions to set on `Passengerfile.json`. See [the Chef `file` resource](https://docs.chef.io/resource_file.html).
-`log_dir_mode` | [String, Integer] | `'0755'` | Permissions to set on the log directory for the app. See [the Chef `directory` resource](https://docs.chef.io/resource_directory.html).
+`passengerfile_mode` | String, Integer | `'644'` | Permissions to set on `Passengerfile.json`. See [the Chef `file` resource](https://docs.chef.io/resource_file.html).
+`log_dir_mode` | String, Integer | `'0755'` | Permissions to set on the log directory for the app. See [the Chef `directory` resource](https://docs.chef.io/resource_directory.html).
 `logrotate_frequency` | String | `'daily'` | See [the `logrotate_app` LWRP](https://github.com/stevendanna/logrotate#logrotate_app)
 `logrotate_rotate` | Integer | `7` | See [the `logrotate_app` LWRP](https://github.com/stevendanna/logrotate#logrotate_app)
 
