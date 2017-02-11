@@ -16,7 +16,6 @@ rvm:
 
 env:
 - SUITE=chefspec
-- SUITE=lint
 - SUITE=centos-6
 - SUITE=centos-7
 - SUITE=ubuntu-14
