@@ -17,8 +17,7 @@ property :logrotate_frequency, String, required: true, default: 'daily'
 property :logrotate_rotate, Integer, required: true, default: 7
 
 
-# TODO: define method to set run_state, call method at beginning of each action
-
+default_action :run
 
 action :run do
   Chef::Log.info("simple_passenger_app run action called with #{new_resource.inspect}")
@@ -140,7 +139,7 @@ action :run do
       # convert all keys to symbols before merge
       Hash[passengerfile.map { |k,v| [k.to_sym,v] }]
     )
-    content(JSON.pretty_generate(Hash[ config.sort_by { |k,v| k.to_s } ]))
+    content(JSON.pretty_generate(Hash[ config.sort_by { |k,_v| k.to_s } ]))
 
     notifies :run, "execute[stop #{app_name}]"
   end

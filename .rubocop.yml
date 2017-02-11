@@ -3,3 +3,4 @@ Metrics/LineLength:
 AllCops:
   Exclude:
     - 'bin/*'
+    - 'vendor/*'

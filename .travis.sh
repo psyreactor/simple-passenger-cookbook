@@ -1,4 +1,4 @@
-set -ev
+#!/bin/bash -ex
 
 case $SUITE in
 chefspec)

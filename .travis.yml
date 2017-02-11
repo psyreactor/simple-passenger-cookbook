@@ -7,9 +7,9 @@ sudo: required
 dist: trusty
 
 before_install:
-  # update core ruby dependencies
-  - gem update --system
-  - gem update bundler
+# update core ruby dependencies
+- gem update --system
+- gem update bundler
 
 rvm:
 - 2.3.3
@@ -27,8 +27,3 @@ services:
 
 script:
 - bundle exec ./.travis.sh
-
-matrix:
-  allow_failures:
-  - env: SUITE=lint
-  fast_finish: true
