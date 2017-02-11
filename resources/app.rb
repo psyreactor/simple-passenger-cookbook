@@ -6,6 +6,7 @@ property :git_repo, String, required: true
 property :git_revision, String, required: true, default: 'master'
 
 property :ruby_version, String, required: true, default: '2.3.3'
+property :ruby_bin, String
 property :bundler_version, String, required: true, default: '~> 1.13.7'
 
 # passengerfile options are merged with sensible defaults
@@ -42,11 +43,15 @@ action :run do
     node['passenger']['pid_files_dir'],
     "#{app_name}.pid"
   )
-  node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.join(
-    node['ruby_build']['default_ruby_base_path'],
-    ruby_version,
-    'bin'
-  )
+  if ruby_bin
+    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
+  else
+    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.join(
+      node['ruby_build']['default_ruby_base_path'],
+      ruby_version,
+      'bin'
+    )
+  end
   node.run_state['passenger'][app_name]['bundle_bin'] = ::File.join(
     node.run_state['passenger'][app_name]['ruby_bin_dir'],
     'bundle'
@@ -144,10 +149,12 @@ action :run do
     notifies :run, "execute[stop #{app_name}]"
   end
 
-  # install ruby
-  ruby_build_ruby "#{app_name} ruby" do
-    definition ruby_version
-    notifies :run, "execute[stop #{app_name}]"
+  unless ruby_bin
+    # install ruby
+    ruby_build_ruby "#{app_name} ruby" do
+      definition ruby_version
+      notifies :run, "execute[stop #{app_name}]"
+    end
   end
 
   # install bundler
@@ -192,11 +199,15 @@ action :stop do
     node['passenger']['pid_files_dir'],
     "#{app_name}.pid"
   )
-  node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.join(
-    node['ruby_build']['default_ruby_base_path'],
-    ruby_version,
-    'bin'
-  )
+  if ruby_bin
+    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
+  else
+    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.join(
+      node['ruby_build']['default_ruby_base_path'],
+      ruby_version,
+      'bin'
+    )
+  end
   node.run_state['passenger'][app_name]['bundle_bin'] = ::File.join(
     node.run_state['passenger'][app_name]['ruby_bin_dir'],
     'bundle'

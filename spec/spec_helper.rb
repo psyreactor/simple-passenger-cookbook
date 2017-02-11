@@ -8,6 +8,8 @@ Dir[File.join(current_dir, 'support/**/*.rb')].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.log_level = :fatal
+  config.platform = 'centos'
+  config.version = '6.8'
 end
 
 # https://github.com/chef-rbenv/ruby_build/pull/51 submitted to upstream
