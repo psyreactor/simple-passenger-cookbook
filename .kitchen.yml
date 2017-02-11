@@ -1,19 +1,13 @@
 ---
 driver:
   name: vagrant
-  ## enable to interact with the test app on port 8080 of host machine
-  # network:
-  #   - ["forwarded_port", {guest: 80, host: 8080}]
 
 provisioner:
   name: chef_zero
-  # overriding for now do to an issue with ubuntu-16.04 bento box failing to install chef
-  # because of a dpkg lock caused by unattended upgrade on bootup
-  # https://github.com/chef/bento/issues/609
-  chef_omnibus_url: https://gist.githubusercontent.com/atheiman/d13b52d594731b35ee49effac74dabc7/raw/6d22d4deda5f8d4e4d22ab57b2538fc7a5beaf14/install.sh
+  log_level: info
 
 platforms:
-  - name: centos-6.7
+  - name: centos-6.8
   - name: centos-7.2
   - name: ubuntu-14.04
     run_list:
@@ -26,6 +20,13 @@ suites:
   - name: default
     run_list:
       - recipe[simple_passenger::default]
+      - recipe[lwrp_app::default]
     attributes:
       passenger:
-        git_repo: https://github.com/atheiman/simple-sinatra.git
+        apps:
+          attributes-app:
+            git_repo: https://github.com/atheiman/simple-sinatra.git
+            passengerfile:
+              port: 8080
+              environment: attributes-app-environment
+            ruby_version: 2.4.0

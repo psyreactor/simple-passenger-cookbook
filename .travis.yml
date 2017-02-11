@@ -1,28 +1,28 @@
 language: ruby
 
-gemfile:
-- Gemfile
-- chef-12.5.Gemfile
+cache: bundler
 
 sudo: required
 
 dist: trusty
 
+before_install:
+# update core ruby dependencies
+- gem update --system
+- gem update bundler
+
 rvm:
-- 2.3.1
+- 2.3.3
 
 env:
-- SUITE=other
-- SUITE=centos
-- SUITE=ubuntu
+- SUITE=chefspec
+- SUITE=centos-6
+- SUITE=centos-7
+- SUITE=ubuntu-14
+- SUITE=ubuntu-16
 
 services:
 - docker
 
 script:
 - bundle exec ./.travis.sh
-
-matrix:
-  allow_failures:
-  - gemfile: chef-12.5.Gemfile
-  fast_finish: true

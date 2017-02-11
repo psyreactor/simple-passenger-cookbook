@@ -1,12 +1,10 @@
-set -ev
+#!/bin/bash -ex
 
 case $SUITE in
-other)
-  foodcritic --context --progress .
-  rubocop --lint --display-style-guide --extra-details --display-cop-names
+chefspec)
   rspec
   ;;
 *)
-  rake integration:docker[test,"$SUITE",2]
+  KITCHEN_LOCAL_YAML='.kitchen.docker.yml' kitchen test "$SUITE" --concurrency=2 --log-level=debug
   ;;
 esac
