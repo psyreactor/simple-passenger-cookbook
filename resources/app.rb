@@ -6,7 +6,7 @@ property :git_repo, String, required: true
 property :git_revision, String, required: true, default: 'master'
 
 property :ruby_version, String, required: true, default: '2.3.3'
-property :bundler_version, String, required: true, default: '~> 1.13'
+property :bundler_version, String, required: true, default: '~> 1.13.7'
 
 # passengerfile options are merged with sensible defaults
 property :passengerfile, Hash, required: false, default: {}

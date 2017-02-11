@@ -119,7 +119,7 @@ shared_examples 'default recipe behavior' do
 
     expect(chef_run).to install_gem_package('bundler').with(
       gem_binary: '/usr/local/ruby/2.3.3/bin/gem',
-      version: '~> 1.13'
+      version: '~> 1.13.7'
     )
     bundler_package = chef_run.gem_package('attributes-app bundler')
     expect(bundler_package).to notify('execute[stop attributes-app]').to(:run).delayed
