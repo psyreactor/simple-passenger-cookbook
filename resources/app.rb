@@ -17,6 +17,9 @@ property :logrotate_frequency, String, required: true, default: 'daily'
 property :logrotate_rotate, Integer, required: true, default: 7
 
 
+# TODO: define method to set run_state, call method at beginning of each action
+
+
 action :run do
   Chef::Log.info("simple_passenger_app run action called with #{new_resource.inspect}")
 
@@ -186,17 +189,6 @@ action :stop do
     node['passenger']['apps_dir'],
     app_name
   )
-  node.run_state['passenger'][app_name]['log_dir'] = ::File.join(
-    node['passenger']['logs_root'],
-    app_name
-  )
-  node.run_state['passenger'][app_name]['log_file'] = ::File.join(
-    node.run_state['passenger'][app_name]['log_dir'],
-    "#{app_name}.log"
-  )
-  # run_state[...] cannot be passed into logrotate_app lwrp for some reason. Store this in run_state
-  # and local var
-  log_file = node.run_state['passenger'][app_name]['log_file']
   node.run_state['passenger'][app_name]['pid_file'] = ::File.join(
     node['passenger']['pid_files_dir'],
     "#{app_name}.pid"

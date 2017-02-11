@@ -42,6 +42,7 @@ end
 include_recipe 'ruby_build'
 
 
+# app definitions will be built into this hash
 node.run_state['passenger'] = {}
 
 # build apps from attributes
