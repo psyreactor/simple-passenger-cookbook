@@ -16,6 +16,9 @@ platforms:
     run_list:
       - recipe[apt]
 
+verifier:
+  name: inspec
+
 suites:
   - name: default
     run_list:
