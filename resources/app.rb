@@ -26,11 +26,11 @@ action :run do
   node.run_state['passenger'][new_resource.app_name] = {}
   node.run_state['passenger'][new_resource.app_name]['app_root'] = ::File.join(
     node['passenger']['apps_dir'],
-    new_resource.new_resource.app_name
+    new_resource.app_name
   )
   node.run_state['passenger'][new_resource.app_name]['log_dir'] = ::File.join(
     node['passenger']['logs_root'],
-    new_resource.new_resource.app_name
+    new_resource.app_name
   )
   node.run_state['passenger'][new_resource.app_name]['log_file'] = ::File.join(
     node.run_state['passenger'][new_resource.app_name]['log_dir'],
@@ -193,7 +193,7 @@ action :stop do
   node.run_state['passenger'][new_resource.app_name] = {}
   node.run_state['passenger'][new_resource.app_name]['app_root'] = ::File.join(
     node['passenger']['apps_dir'],
-    new_resource.new_resource.app_name
+    new_resource.app_name
   )
   node.run_state['passenger'][new_resource.app_name]['pid_file'] = ::File.join(
     node['passenger']['pid_files_dir'],
