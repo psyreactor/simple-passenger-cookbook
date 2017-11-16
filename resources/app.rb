@@ -23,202 +23,202 @@ default_action :run
 action :run do
   Chef::Log.info("simple_passenger_app run action called with #{new_resource.inspect}")
 
-  node.run_state['passenger'][app_name] = {}
-  node.run_state['passenger'][app_name]['app_root'] = ::File.join(
+  node.run_state['passenger'][new_resource.app_name] = {}
+  node.run_state['passenger'][new_resource.app_name]['app_root'] = ::File.join(
     node['passenger']['apps_dir'],
-    app_name
+    new_resource.new_resource.app_name
   )
-  node.run_state['passenger'][app_name]['log_dir'] = ::File.join(
+  node.run_state['passenger'][new_resource.app_name]['log_dir'] = ::File.join(
     node['passenger']['logs_root'],
-    app_name
+    new_resource.new_resource.app_name
   )
-  node.run_state['passenger'][app_name]['log_file'] = ::File.join(
-    node.run_state['passenger'][app_name]['log_dir'],
-    "#{app_name}.log"
+  node.run_state['passenger'][new_resource.app_name]['log_file'] = ::File.join(
+    node.run_state['passenger'][new_resource.app_name]['log_dir'],
+    "#{new_resource.app_name}.log"
   )
   # run_state[...] cannot be passed into logrotate_app lwrp for some reason. Store this in run_state
   # and local var
-  log_file = node.run_state['passenger'][app_name]['log_file']
-  node.run_state['passenger'][app_name]['pid_file'] = ::File.join(
+  log_file = node.run_state['passenger'][new_resource.app_name]['log_file']
+  node.run_state['passenger'][new_resource.app_name]['pid_file'] = ::File.join(
     node['passenger']['pid_files_dir'],
-    "#{app_name}.pid"
+    "#{new_resource.app_name}.pid"
   )
   if ruby_bin
-    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
   else
-    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.join(
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.join(
       node['ruby_build']['default_ruby_base_path'],
       ruby_version,
       'bin'
     )
   end
-  node.run_state['passenger'][app_name]['bundle_bin'] = ::File.join(
-    node.run_state['passenger'][app_name]['ruby_bin_dir'],
+  node.run_state['passenger'][new_resource.app_name]['bundle_bin'] = ::File.join(
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'],
     'bundle'
   )
 
   # restart the app (if app was running)
-  execute "restart #{app_name}" do
+  execute "restart #{new_resource.app_name}" do
     action :nothing
-    command "#{node.run_state['passenger'][app_name]['bundle_bin']} exec" \
-      " passenger-config restart-app #{node.run_state['passenger'][app_name]['app_root']}"
-    cwd node.run_state['passenger'][app_name]['app_root']
+    command "#{node.run_state['passenger'][new_resource.app_name]['bundle_bin']} exec" \
+      " passenger-config restart-app #{node.run_state['passenger'][new_resource.app_name]['app_root']}"
+    cwd node.run_state['passenger'][new_resource.app_name]['app_root']
     # only restart the app if the app is already running
-    only_if { ::File.exist?(node.run_state['passenger'][app_name]['pid_file']) }
+    only_if { ::File.exist?(node.run_state['passenger'][new_resource.app_name]['pid_file']) }
     # should be run on any of the following changes
-    subscribes :run, "git[#{app_name}]"
+    subscribes :run, "git[#{new_resource.app_name}]"
   end
 
   # stop the app (if something has changed)
-  execute "stop #{app_name}" do
+  execute "stop #{new_resource.app_name}" do
     action :nothing
-    command "#{node.run_state['passenger'][app_name]['bundle_bin']} exec passenger stop"
-    cwd node.run_state['passenger'][app_name]['app_root']
+    command "#{node.run_state['passenger'][new_resource.app_name]['bundle_bin']} exec passenger stop"
+    cwd node.run_state['passenger'][new_resource.app_name]['app_root']
     # only stop the app if running
-    only_if { ::File.exist?(node.run_state['passenger'][app_name]['pid_file']) }
+    only_if { ::File.exist?(node.run_state['passenger'][new_resource.app_name]['pid_file']) }
     # start the app after stop (a dependency is updating, not just an app code upgrade)
-    notifies :run, "execute[start #{app_name}]"
+    notifies :run, "execute[start #{new_resource.app_name}]"
   end
 
   # create user for the app
-  user app_name do
+  user new_resource.app_name do
     group node['passenger']['group']
-    notifies :run, "execute[stop #{app_name}]"
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   # create log dir for app
-  directory "#{app_name} logs dir" do
-    path node.run_state['passenger'][app_name]['log_dir']
-    owner app_name
+  directory "#{new_resource.app_name} logs dir" do
+    path node.run_state['passenger'][new_resource.app_name]['log_dir']
+    owner new_resource.app_name
     group node['passenger']['group']
     mode log_dir_mode
-    notifies :run, "execute[stop #{app_name}]"
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   # enable log rotation for the log
-  logrotate_app app_name do
+  logrotate_app new_resource.app_name do
     cookbook 'logrotate'
     path log_file
     frequency logrotate_frequency
-    create "644 #{app_name} #{node['passenger']['group']}"
+    create "644 #{new_resource.app_name} #{node['passenger']['group']}"
     rotate logrotate_rotate
-    notifies :run, "execute[stop #{app_name}]"
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   # create app root
-  directory "#{app_name} dir" do
-    path node.run_state['passenger'][app_name]['app_root']
-    owner app_name
+  directory "#{new_resource.app_name} dir" do
+    path node.run_state['passenger'][new_resource.app_name]['app_root']
+    owner new_resource.app_name
     group node['passenger']['group']
     mode '755'
-    notifies :run, "execute[stop #{app_name}]"
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   # git app code
-  git app_name do
-    destination node.run_state['passenger'][app_name]['app_root']
+  git new_resource.app_name do
+    destination node.run_state['passenger'][new_resource.app_name]['app_root']
     repository git_repo
     revision git_revision
-    user app_name
+    user new_resource.app_name
     group node['passenger']['group']
     # this is somewhat unnecessary because restart resource already subscribes to this resource
-    notifies :run, "execute[restart #{app_name}]"
+    notifies :run, "execute[restart #{new_resource.app_name}]"
   end
 
   # create the Passengerfile.json
-  file "#{app_name} Passengerfile" do
-    path ::File.join(node.run_state['passenger'][app_name]['app_root'], 'Passengerfile.json')
+  file "#{new_resource.app_name} Passengerfile" do
+    path ::File.join(node.run_state['passenger'][new_resource.app_name]['app_root'], 'Passengerfile.json')
     mode passengerfile_mode
-    owner app_name
+    owner new_resource.app_name
     group node['passenger']['group']
 
     config = {
       daemonize: true,
       port: 80,
       environment: 'production',
-      log_file: node.run_state['passenger'][app_name]['log_file'],
-      pid_file: node.run_state['passenger'][app_name]['pid_file'],
-      user: app_name,
-      ruby: ::File.join(node.run_state['passenger'][app_name]['ruby_bin_dir'], 'ruby')
+      log_file: node.run_state['passenger'][new_resource.app_name]['log_file'],
+      pid_file: node.run_state['passenger'][new_resource.app_name]['pid_file'],
+      user: new_resource.app_name,
+      ruby: ::File.join(node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'], 'ruby')
     }.merge(
       # convert all keys to symbols before merge
       Hash[passengerfile.map { |k,v| [k.to_sym,v] }]
     )
     content(JSON.pretty_generate(Hash[ config.sort_by { |k,_v| k.to_s } ]))
 
-    notifies :run, "execute[stop #{app_name}]"
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   unless ruby_bin
     # install ruby
-    ruby_build_ruby "#{app_name} ruby" do
+    ruby_build_ruby "#{new_resource.app_name} ruby" do
       definition ruby_version
-      notifies :run, "execute[stop #{app_name}]"
+      notifies :run, "execute[stop #{new_resource.app_name}]"
     end
   end
 
   # install bundler
-  gem_package "#{app_name} bundler" do
+  gem_package "#{new_resource.app_name} bundler" do
     package_name 'bundler'
-    gem_binary ::File.join(node.run_state['passenger'][app_name]['ruby_bin_dir'], 'gem')
+    gem_binary ::File.join(node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'], 'gem')
     version bundler_version
-    notifies :run, "execute[stop #{app_name}]"
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   # install gem dependencies
-  execute "#{app_name} bundle install" do
-    command "#{node.run_state['passenger'][app_name]['bundle_bin']} install --deployment" \
+  execute "#{new_resource.app_name} bundle install" do
+    command "#{node.run_state['passenger'][new_resource.app_name]['bundle_bin']} install --deployment" \
       " --without development test"
-    cwd node.run_state['passenger'][app_name]['app_root']
-    user app_name
+    cwd node.run_state['passenger'][new_resource.app_name]['app_root']
+    user new_resource.app_name
     group node['passenger']['group']
-    not_if "#{node.run_state['passenger'][app_name]['bundle_bin']} check",
-      cwd: node.run_state['passenger'][app_name]['app_root']
-    notifies :run, "execute[stop #{app_name}]"
+    not_if "#{node.run_state['passenger'][new_resource.app_name]['bundle_bin']} check",
+      cwd: node.run_state['passenger'][new_resource.app_name]['app_root']
+    notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
   # start the app (if app was not running)
-  execute "start #{app_name}" do
-    command "#{node.run_state['passenger'][app_name]['bundle_bin']} exec passenger start"
-    cwd node.run_state['passenger'][app_name]['app_root']
+  execute "start #{new_resource.app_name}" do
+    command "#{node.run_state['passenger'][new_resource.app_name]['bundle_bin']} exec passenger start"
+    cwd node.run_state['passenger'][new_resource.app_name]['app_root']
     # dont start the app if the app is already running
     # this is somewhat unnecessary because start app should run if app is was stopped
-    not_if { ::File.exist?(node.run_state['passenger'][app_name]['pid_file']) }
+    not_if { ::File.exist?(node.run_state['passenger'][new_resource.app_name]['pid_file']) }
   end
 end
 
 action :stop do
   Chef::Log.info("simple_passenger_app stop action called with #{new_resource.inspect}")
 
-  node.run_state['passenger'][app_name] = {}
-  node.run_state['passenger'][app_name]['app_root'] = ::File.join(
+  node.run_state['passenger'][new_resource.app_name] = {}
+  node.run_state['passenger'][new_resource.app_name]['app_root'] = ::File.join(
     node['passenger']['apps_dir'],
-    app_name
+    new_resource.new_resource.app_name
   )
-  node.run_state['passenger'][app_name]['pid_file'] = ::File.join(
+  node.run_state['passenger'][new_resource.app_name]['pid_file'] = ::File.join(
     node['passenger']['pid_files_dir'],
-    "#{app_name}.pid"
+    "#{new_resource.app_name}.pid"
   )
   if ruby_bin
-    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
   else
-    node.run_state['passenger'][app_name]['ruby_bin_dir'] = ::File.join(
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.join(
       node['ruby_build']['default_ruby_base_path'],
       ruby_version,
       'bin'
     )
   end
-  node.run_state['passenger'][app_name]['bundle_bin'] = ::File.join(
-    node.run_state['passenger'][app_name]['ruby_bin_dir'],
+  node.run_state['passenger'][new_resource.app_name]['bundle_bin'] = ::File.join(
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'],
     'bundle'
   )
 
   # stop the app
-  execute "stop #{app_name}" do
+  execute "stop #{new_resource.app_name}" do
     action :nothing
-    command "#{node.run_state['passenger'][app_name]['bundle_bin']} exec passenger stop"
-    cwd node.run_state['passenger'][app_name]['app_root']
+    command "#{node.run_state['passenger'][new_resource.app_name]['bundle_bin']} exec passenger stop"
+    cwd node.run_state['passenger'][new_resource.app_name]['app_root']
     # only stop the app if running
-    only_if { ::File.exist?(node.run_state['passenger'][app_name]['pid_file']) }
+    only_if { ::File.exist?(node.run_state['passenger'][new_resource.app_name]['pid_file']) }
   end
 end
