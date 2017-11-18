@@ -17,7 +17,6 @@ property :log_dir_mode, [String, Integer], required: true, default: '0755'
 property :logrotate_frequency, String, required: true, default: 'daily'
 property :logrotate_rotate, Integer, required: true, default: 7
 
-
 default_action :run
 
 action :run do
@@ -43,12 +42,12 @@ action :run do
     node['passenger']['pid_files_dir'],
     "#{new_resource.app_name}.pid"
   )
-  if ruby_bin
-    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.split(ruby_bin).first
+  if new_resource.ruby_bin
+    node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.split(new_resource.ruby_bin).first
   else
     node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.join(
       node['ruby_build']['default_ruby_base_path'],
-      ruby_version,
+      new_resource.ruby_version,
       'bin'
     )
   end
@@ -91,7 +90,7 @@ action :run do
     path node.run_state['passenger'][new_resource.app_name]['log_dir']
     owner new_resource.app_name
     group node['passenger']['group']
-    mode log_dir_mode
+    mode new_resource.log_dir_mode
     notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
@@ -99,9 +98,9 @@ action :run do
   logrotate_app new_resource.app_name do
     cookbook 'logrotate'
     path log_file
-    frequency logrotate_frequency
+    frequency new_resource.logrotate_frequency
     create "644 #{new_resource.app_name} #{node['passenger']['group']}"
-    rotate logrotate_rotate
+    rotate new_resource.logrotate_rotate
     notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
@@ -117,8 +116,8 @@ action :run do
   # git app code
   git new_resource.app_name do
     destination node.run_state['passenger'][new_resource.app_name]['app_root']
-    repository git_repo
-    revision git_revision
+    repository new_resource.git_repo
+    revision new_resource.git_revision
     user new_resource.app_name
     group node['passenger']['group']
     # this is somewhat unnecessary because restart resource already subscribes to this resource
@@ -128,7 +127,7 @@ action :run do
   # create the Passengerfile.json
   file "#{new_resource.app_name} Passengerfile" do
     path ::File.join(node.run_state['passenger'][new_resource.app_name]['app_root'], 'Passengerfile.json')
-    mode passengerfile_mode
+    mode new_resource.passengerfile_mode
     owner new_resource.app_name
     group node['passenger']['group']
 
@@ -142,17 +141,17 @@ action :run do
       ruby: ::File.join(node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'], 'ruby')
     }.merge(
       # convert all keys to symbols before merge
-      Hash[passengerfile.map { |k,v| [k.to_sym,v] }]
+      Hash[new_resource.passengerfile.map { |k,v| [k.to_sym,v] }]
     )
     content(JSON.pretty_generate(Hash[ config.sort_by { |k,_v| k.to_s } ]))
 
     notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
-  unless ruby_bin
+  unless new_resource.ruby_bin
     # install ruby
     ruby_build_ruby "#{new_resource.app_name} ruby" do
-      definition ruby_version
+      definition new_resource.ruby_version
       notifies :run, "execute[stop #{new_resource.app_name}]"
     end
   end
@@ -161,7 +160,7 @@ action :run do
   gem_package "#{new_resource.app_name} bundler" do
     package_name 'bundler'
     gem_binary ::File.join(node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'], 'gem')
-    version bundler_version
+    version new_resource.bundler_version
     notifies :run, "execute[stop #{new_resource.app_name}]"
   end
 
@@ -204,7 +203,7 @@ action :stop do
   else
     node.run_state['passenger'][new_resource.app_name]['ruby_bin_dir'] = ::File.join(
       node['ruby_build']['default_ruby_base_path'],
-      ruby_version,
+      new_resource.ruby_version,
       'bin'
     )
   end
